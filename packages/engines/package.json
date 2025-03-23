@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@prisma/debug": "workspace:*",
-    "@prisma/engines-version": "6.6.0-30.baa69bfeca2f318076d19b6ce650fd8c9b4cb452",
+    "@prisma/engines-version": "6.6.0-28.feat-orm-596-expose-model-grouping-on-dmmf-600968a1f46d3d8626cdd2c933cf04e50eb5219b",
     "@prisma/fetch-engine": "workspace:*",
     "@prisma/get-platform": "workspace:*"
   },
