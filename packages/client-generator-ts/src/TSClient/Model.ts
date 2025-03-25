@@ -60,6 +60,7 @@ export class Model implements Generable {
   protected updateManyAndReturnType: undefined | DMMF.OutputType
   protected mapping?: DMMF.ModelMapping
   private dmmf: DMMFHelper
+
   constructor(protected readonly model: DMMF.Model, protected readonly context: GenerateContext) {
     this.dmmf = context.dmmf
     this.type = this.context.dmmf.outputTypeMap.model[model.name]
@@ -228,6 +229,7 @@ type ${getGroupByPayloadName(model.name)}<T extends ${groupByArgsName}> = Prisma
   > 
 `
   }
+
   private getAggregationTypes() {
     const { model, mapping } = this
     let aggregateType = this.dmmf.outputTypeMap.prisma[getAggregateName(model.name)]
@@ -384,13 +386,16 @@ export type ${getAggregateGetName(model.name)}<T extends ${getAggregateArgsName(
       .moduleExport(
         ts.typeDeclaration(
           model.name,
-          ts.namedType(`$Runtime.Types.Result.DefaultSelection`).addGenericArgument(ts.namedType(getPayloadName(model.name))),
+          ts
+            .namedType(`$Runtime.Types.Result.DefaultSelection`)
+            .addGenericArgument(ts.namedType(getPayloadName(model.name))),
         ),
       )
       .setDocComment(ts.docComment(docs))
 
     return ts.stringify(modelTypeExport)
   }
+
   public toTS(): string {
     const { model } = this
     const isComposite = this.dmmf.isComposite(model.name)
@@ -502,6 +507,7 @@ ${this.argsTypes.map((type) => ts.stringify(type)).join('\n\n')}
 `
   }
 }
+
 export class ModelDelegate implements Generable {
   constructor(protected readonly outputType: DMMF.OutputType, protected readonly context: GenerateContext) {}
 
