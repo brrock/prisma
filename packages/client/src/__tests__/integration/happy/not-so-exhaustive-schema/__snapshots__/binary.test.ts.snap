@@ -3179,6 +3179,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * Post findUnique
    */
@@ -4392,6 +4393,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * User findUnique
    */
@@ -5608,6 +5610,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * M findUnique
    */
@@ -6824,6 +6827,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * N findUnique
    */
@@ -8040,6 +8044,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * OneOptional findUnique
    */
@@ -9277,6 +9282,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * ManyRequired findUnique
    */
@@ -10517,6 +10523,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * OptionalSide1 findUnique
    */
@@ -11734,6 +11741,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * OptionalSide2 findUnique
    */
@@ -12900,6 +12908,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * A findUnique
    */
@@ -13941,6 +13950,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * B findUnique
    */
@@ -14962,6 +14972,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * C findUnique
    */
@@ -16005,6 +16016,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * D findUnique
    */
@@ -16987,6 +16999,7 @@ export namespace Prisma {
     
 
   // Custom InputTypes
+
   /**
    * E findUnique
    */
