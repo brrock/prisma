@@ -9,7 +9,6 @@ import path from 'path'
 import type { O } from 'ts-toolbelt'
 
 import { DMMFHelper } from '../dmmf'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- used in jsdoc
 import type { FileMap } from '../generateClient'
 import { GenerateClientOptions } from '../generateClient'
 import { GenericArgsInfo } from '../GenericsArgsInfo'
@@ -26,6 +25,7 @@ import { commonCodeJS } from './common'
 import { Enum } from './Enum'
 import { createClassFile } from './file-generators/ClassFile'
 import { createCommonFile } from './file-generators/CommonFile'
+import { createCommonInputTypeFiles } from './file-generators/CommonInputTypesFile'
 import { createEnumsFile } from './file-generators/EnumsFile'
 import { createModelFiles } from './file-generators/ModelFiles'
 import { createModelsFile } from './file-generators/ModelsFile'
@@ -208,9 +208,7 @@ ${buildNFTAnnotations(edge || !copyEngine, clientEngineType, binaryTargets, rela
     })
 
     return `
-import * as runtime from '${context.runtimeJsPath}'
-import $Public = runtime.Types.Public
-import $Result = runtime.Types.Result
+import type * as $Runtime from '@prisma/client/runtime/library';
 
 import type * as Prisma from './common'
 ${context.dmmf.datamodel.enums.length > 0 ? `import type * as $Enums from './enums'` : ''}
@@ -218,9 +216,9 @@ ${context.dmmf.datamodel.enums.length > 0 ? `import type * as $Enums from './enu
 export * as Prisma from './common'
 ${context.dmmf.datamodel.enums.length > 0 ? `export type * as $Enums from './enums'` : ''}
 
-export { PrismaClient } from './client'
+export { PrismaClient } from './class'
 
-export type PrismaPromise<T> = $Public.PrismaPromise<T>
+export type PrismaPromise<T> = $Runtime.Types.Public.PrismaPromise<T>
 
 ${modelAndTypes.map((m) => m.toTSWithoutNamespace()).join('\n')}
 
@@ -296,6 +294,7 @@ Object.assign(exports, Prisma)
     return {
       'models.d.ts': createModelsFile(context, modelsFileMap),
       'common.d.ts': createCommonFile(context, this.options),
+      'commonInputTypes.ts': createCommonInputTypeFiles(context),
       'class.d.ts': createClassFile(context, this.options),
       'enums.d.ts': createEnumsFile(context),
       models: modelsFileMap,

@@ -38,7 +38,15 @@ import { TAB_SIZE } from './constants'
 import { Count } from './Count'
 import type { Generable } from './Generable'
 import { GenerateContext } from './GenerateContext'
-import { getArgFieldJSDoc, getMethodJSDoc, getMethodJSDocBody, wrapComment } from './helpers'
+import {
+  getArgFieldJSDoc,
+  getMethodJSDoc,
+  getMethodJSDocBody,
+  omit,
+  prismaPromise,
+  promise,
+  wrapComment,
+} from './helpers'
 import { InputType } from './Input'
 import { ModelFieldRefs } from './ModelFieldRefs'
 import { buildOutputType } from './Output'
@@ -180,7 +188,7 @@ export class Model implements Generable {
     return `
 
 
-export type ${groupByArgsName}<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+export type ${groupByArgsName}<ExtArgs extends $Runtime.Types.Extensions.InternalArgs = $Runtime.Types.Extensions.DefaultArgs> = {
 ${indent(
   groupByRootField.args
     .map((arg) => {
@@ -297,7 +305,7 @@ ${
     : ''
 }
 
-export type ${aggregateArgsName}<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+export type ${aggregateArgsName}<ExtArgs extends $Runtime.Types.Extensions.InternalArgs = $Runtime.Types.Extensions.DefaultArgs> = {
 ${indent(
   aggregateRootField.args
     .map((arg) => {
@@ -376,7 +384,7 @@ export type ${getAggregateGetName(model.name)}<T extends ${getAggregateArgsName(
       .moduleExport(
         ts.typeDeclaration(
           model.name,
-          ts.namedType(`$Result.DefaultSelection`).addGenericArgument(ts.namedType(getPayloadName(model.name))),
+          ts.namedType(`$Runtime.Types.Result.DefaultSelection`).addGenericArgument(ts.namedType(getPayloadName(model.name))),
         ),
       )
       .setDocComment(ts.docComment(docs))
@@ -483,7 +491,7 @@ ${ts.stringify(buildModelPayload(this.model, this.context), { newLine: 'none' })
 
 type ${model.name}GetPayload<S extends boolean | null | undefined | ${getModelArgName(
       model.name,
-    )}> = $Result.GetResult<${getPayloadName(model.name)}, S>
+    )}> = $Runtime.Types.Result.GetResult<${getPayloadName(model.name)}, S>
 
 ${isComposite ? '' : new ModelDelegate(this.type, this.context).toTS()}
 
@@ -536,7 +544,7 @@ export class ModelDelegate implements Generable {
     return `\
 ${
   availableActions.includes(DMMF.ModelAction.aggregate)
-    ? `type ${countArgsName}<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    ? `export type ${countArgsName}<ExtArgs extends $Runtime.Types.Extensions.InternalArgs = $Runtime.Types.Extensions.DefaultArgs> =
   Omit<${getModelArgName(name, DMMF.ModelAction.findMany)}, ${excludedArgsForCountType}> & {
     select?: ${getCountAggregateInputName(name)} | true
   }
@@ -558,7 +566,7 @@ ${
   count<T extends ${countArgsName}>(
     args?: Prisma.Subset<T, ${countArgsName}>,
   ): Prisma.PrismaPromise<
-    T extends $Utils.Record<'select', any>
+    T extends $Runtime.Types.Utils.Record<'select', any>
       ? T['select'] extends true
         ? number
         : Prisma.GetScalarType<T['select'], ${getCountAggregateOutputName(name)}>
@@ -672,7 +680,7 @@ function buildModelDelegateMethod(modelName: string, actionName: DMMF.ModelActio
 function getNonAggregateMethodArgs(modelName: string, actionName: DMMF.ModelAction) {
   const makeParameter = (type: ts.TypeBuilder) => ts.parameter('args', type)
   if (actionName === DMMF.ModelAction.count) {
-    const type = ts.omit(
+    const type = omit(
       ts.namedType(getModelArgName(modelName, DMMF.ModelAction.findMany)),
       ts
         .unionType(ts.stringLiteral('select'))
@@ -741,14 +749,14 @@ export function getReturnType({
   isNullable = false,
 }: GetReturnTypeOptions): ts.TypeBuilder {
   if (actionName === DMMF.ModelAction.count) {
-    return ts.promise(ts.numberType)
+    return promise(ts.numberType)
   }
   if (actionName === DMMF.ModelAction.aggregate) {
-    return ts.promise(ts.namedType(getAggregateGetName(modelName)).addGenericArgument(ts.namedType('T')))
+    return promise(ts.namedType(getAggregateGetName(modelName)).addGenericArgument(ts.namedType('T')))
   }
 
   if (actionName === DMMF.ModelAction.findRaw || actionName === DMMF.ModelAction.aggregateRaw) {
-    return ts.prismaPromise(ts.namedType('Prisma.JsonObject'))
+    return prismaPromise(ts.namedType('Prisma.JsonObject'))
   }
 
   if (
@@ -801,7 +809,7 @@ function getFluentWrapper(modelName: string, resultType: ts.TypeBuilder, nullTyp
 
 function getResultType(modelName: string, actionName: DMMF.ModelAction) {
   return ts
-    .namedType('$Result.GetResult')
+    .namedType('$Runtime.Types.Result.GetResult')
     .addGenericArgument(ts.namedType(getPayloadName(modelName)).addGenericArgument(extArgsParam.toArgument()))
     .addGenericArgument(ts.namedType('T'))
     .addGenericArgument(ts.stringLiteral(actionName))
@@ -862,7 +870,7 @@ function buildFluentWrapperDefinition(modelName: string, outputType: DMMF.Output
       .addGenericParameter(ts.genericParameter('TResult2').default(ts.neverType))
       .addParameter(promiseCallback('onfulfilled', ts.parameter('value', ts.namedType('T')), ts.namedType('TResult1')))
       .addParameter(promiseCallback('onrejected', ts.parameter('reason', ts.anyType), ts.namedType('TResult2')))
-      .setReturnType(ts.promise(ts.unionType([ts.namedType('TResult1'), ts.namedType('TResult2')]))),
+      .setReturnType(promise(ts.unionType([ts.namedType('TResult1'), ts.namedType('TResult2')]))),
   )
 
   definition.add(
@@ -877,7 +885,7 @@ function buildFluentWrapperDefinition(modelName: string, outputType: DMMF.Output
       )
       .addGenericParameter(ts.genericParameter('TResult').default(ts.neverType))
       .addParameter(promiseCallback('onrejected', ts.parameter('reason', ts.anyType), ts.namedType('TResult')))
-      .setReturnType(ts.promise(ts.unionType([ts.namedType('T'), ts.namedType('TResult')]))),
+      .setReturnType(promise(ts.unionType([ts.namedType('T'), ts.namedType('TResult')]))),
   )
 
   definition.add(
@@ -894,7 +902,7 @@ function buildFluentWrapperDefinition(modelName: string, outputType: DMMF.Output
       .addParameter(
         ts.parameter('onfinally', ts.unionType([ts.functionType(), ts.undefinedType, ts.nullType])).optional(),
       )
-      .setReturnType(ts.promise(ts.namedType('T'))),
+      .setReturnType(promise(ts.namedType('T'))),
   )
 
   return ts.moduleExport(definition).setDocComment(ts.docComment`
