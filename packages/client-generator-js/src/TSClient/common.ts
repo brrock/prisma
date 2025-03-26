@@ -154,7 +154,7 @@ import $Result = runtime.Types.Result
 
 export type PrismaPromise<T> = $Public.PrismaPromise<T>
 `,
-  ts: () => `export import DMMF = runtime.DMMF
+  ts: () => `export type DMMF = runtime.DMMF
 
 export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
